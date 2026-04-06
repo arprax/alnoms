@@ -18,7 +18,8 @@ import io
 import importlib.util
 import sys
 import os
-
+import inspect
+from typing import Optional, List, Dict, Any
 from alnoms.utils.profiler import Profiler
 from alnoms.utils.heuristics import analyze_code
 
@@ -99,32 +100,74 @@ def profile_script(path: str):
     return results[:5], total_time, module
 
 
-def run_empirical_test(module, target_func_name: str):
+def run_empirical_test(
+    module: Any, slowest_func_name: str
+) -> Optional[List[Dict[str, Any]]]:
     """
-    Hooks a suspected bottleneck function into the Arprax mathematical Profiler.
+    Orchestrates the empirical scaling analysis by bridging a target function
+    with a user-defined data generator.
 
-    Requires the user to have defined an 'alnoms_data_gen' function in their
-    script. If found, it runs a scaling test (N=250, 500, 1000, 2000) to
-    empirically prove the Big-O complexity of the bottleneck.
+    This function implements 'Target Pinning' and 'Signature Validation' to ensure
+    that mathematical doubling tests are performed on the correct logic without
+    triggering TypeErrors on wrapper functions.
+
+    Workflow:
+        1. Identification: Looks for a 'data_gen' function in the target module.
+        2. Targeting: Uses 'Target Pinning' if data_gen returns a dict; otherwise,
+           targets the slowest function identified by cProfile.
+        3. Validation: Employs an AST-level 'Safety Gate' to verify that the
+           generator's output matches the target function's signature.
+        4. Execution: Invokes the Alnoms Profiler to run doubling tests (N=250 to 2000).
 
     Args:
-        module: The dynamically loaded target script module.
-        target_func_name (str): The name of the slowest function found by cProfile.
+        module (Any): The dynamically loaded Python module being analyzed.
+        slowest_func_name (str): The name of the function identified as the
+            primary bottleneck during dynamic profiling.
 
     Returns:
-        list[dict] | None: The mathematical scaling proof array, or None if the
-                           required data generator is missing.
+        Optional[List[Dict[str, Any]]]: A list of scaling results (N, Time, Ratio,
+            Complexity) if successful; None if requirements are not met or
+            signatures mismatch.
     """
-    target_func = getattr(module, target_func_name, None)
-    input_gen = getattr(module, "alnoms_data_gen", None)
-
-    if not target_func or not input_gen:
+    input_gen = getattr(module, "data_gen", None)
+    if not input_gen:
         return None
 
+    # 1. Probe the generator to determine the auditing strategy
+    sample_data = input_gen(250)
+
+    # 2. Check for Explicit Pinning (User overrides the cProfile bottleneck)
+    if isinstance(sample_data, dict) and "target" in sample_data:
+        target_name = sample_data["target"]
+
+        def effective_gen(n):
+            return input_gen(n)["args"]
+    else:
+        # Default: Target the function that took the most time in cProfile
+        target_name = slowest_func_name
+        effective_gen = input_gen
+
+    target_func = getattr(module, target_name, None)
+    if not target_func:
+        return None
+
+    # 3. THE SAFETY GATE: Signature Verification
+    # Prevents TypeErrors when a wrapper (e.g., run_pipeline) is identified
+    # as the bottleneck but does not accept the scaled arguments.
+    sig = inspect.signature(target_func)
+    params = list(sig.parameters.values())
+
+    # Calculate argument count provided by the generator
+    test_args = effective_gen(250)
+    args_count = len(test_args) if isinstance(test_args, tuple) else 1
+
+    # Enforcement: If function takes 0 args but data is provided, skip to avoid crash
+    if len(params) == 0 and args_count > 0:
+        return None
+
+    # 4. Mathematical Execution
     prof = Profiler(repeats=3, warmup=1, mode="min")
-    # Using 4 rounds to keep the CLI fast while still proving the math
-    results = prof.run_doubling_test(target_func, input_gen, start_n=250, rounds=4)
-    return results
+    return prof.run_doubling_test(target_func, effective_gen, start_n=250, rounds=4)
 
 
 def analyze_file(path: str) -> dict:

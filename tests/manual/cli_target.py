@@ -5,7 +5,7 @@ Run via: alnoms analyze tests/manual/cli_target.py
 
 
 # The data generator required by the Alnoms standard for Empirical Math
-def alnoms_data_gen(n):
+def data_gen(n):
     return list(range(n))
 
 
@@ -21,5 +21,5 @@ def process_data(arr):
 
 if __name__ == "__main__":
     # Local execution block just in case it's run directly
-    data = alnoms_data_gen(500)
+    data = data_gen(500)
     process_data(data)

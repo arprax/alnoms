@@ -66,10 +66,16 @@ def print_report(result: dict, file_path: str):
                 f"✅ PASSED: Function operates at {final_complexity}. Safe for cloud scaling."
             )
     else:
+        target = result.get("empirical_target", "your_function")
         print("ℹ️  EMPIRICAL ANALYSIS SKIPPED")
+        print(f"   -> To prove Big-O complexity for {target}(), add a data generator:")
+        print("\n   def data_gen(n):")
+        print("       # Generate your test data of size 'n' here")
+        print("       # return (arg1, arg2, ...)")
         print(
-            "   -> Add 'alnoms_data_gen(n)' to your file to enable mathematical scaling tests."
+            "       # OR use 'target' to audit a specific function within a pipeline:"
         )
+        print(f"       return {{'target': '{target}', 'args': (data_1, data_2)}}")
 
     print("==================================================\n")
 
