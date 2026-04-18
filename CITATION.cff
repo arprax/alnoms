@@ -4,7 +4,7 @@ authors:
   - family-names: "Chowdhury"
     given-names: "Tanmoy"
     affiliation: "Arprax LLC"
-title: "Alnoms: A Production-Grade Algorithm Engineering Library"
+title: "Alnoms: A Deterministic, Governance‑Ready Python Library for Algorithmic Complexity Analysis and Data Structure Instrumentation"
 version: 0.1.0
 date-released: 2026-02-01
 url: "https://alnoms.com"

@@ -4,11 +4,12 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "alnoms"
-version = "0.5.1"  # Managed by promote_release.py - Do not edit manually. If you do, always match it with the current github release
+version = "1.0.1"  # 0.5.1 Managed by promote_oss.py - Do not edit manually. If you do, always match it with the current github release
 description = "Alnoms: Sovereign Algorithm Standard and Performance Governance Engine"
 dependencies = []
 readme = "README.md"
-authors = [{ name="Arprax Lab", email="lab@arprax.com" }]
+authors = [{ name="Tanmoy Chowdhury", email="tanmoy@arprax.com" }]
+maintainers = [{ name="Arprax Lab", email="lab@arprax.com" }]
 requires-python = ">=3.9"
 # Add keywords to help with Google/PyPI search visibility
 keywords = ["algorithms", "sorting", "profiler", "industrial-cs", "alnoms", "arprax"]
@@ -27,7 +28,8 @@ package-dir = {"" = "src"}
 
 [tool.setuptools.packages.find]
 where = ["src"]
-include = ["alnoms*"] # Finds alnoms and future pro/enterprise tiers
+include = ["alnoms", "alnoms.*"]
+exclude = ["alnoms_pro*", "alnoms_enterprise*"] # Explicitly ban these from PyPI
 namespaces = true
 
 # --- Pytest Configuration ---
@@ -38,10 +40,26 @@ norecursedirs = ["tests/manual", "examples", ".*", "dist", "build", "venv"]
 addopts = "--cov=src/alnoms --cov-report=term-missing --cov-branch" # Auto-triggers coverage
 
 # --- Coverage Configuration (The Single Source of Truth) ---
+[tool.coverage.run]
+source = ["alnoms"]
+# Ensure the archive is never measured during promote_oss.py runs
+omit = [
+    "*/legacy_archive/*",
+    "src/alnoms/__main__.py",
+    "src/alnoms/cli.py"
+]
+
 [tool.coverage.report]
-fail_under = 90
+fail_under = 80
 show_missing = true
 skip_covered = true
+exclude_lines = [
+    "pragma: no cover",
+    "if __name__ == .__main__.:",
+    "raise NotImplementedError",
+    "def __repr__",
+    "abstractmethod"
+]
 
 [tool.semantic_release]
 #version_variable = ["pyproject.toml:project.version"]

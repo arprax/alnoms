@@ -1,76 +1,143 @@
-# 🎓 Arprax Lab: Algorithm Demonstrations
+# 🔬 Alnoms Demonstration Suite
 
-Welcome to the **Arprax Lab** demonstration suite. This directory contains high-fidelity examples designed to help students and researchers visualize, profile, and interact with the algorithms contained in the `arprax-algorithms` core library.
+This directory contains the **official runnable demonstrations** for the Alnoms Algorithmic Governance Engine.  
+These scripts are **not unit tests** — they are **user‑facing examples** that illustrate:
 
----
+- Static AST analysis  
+- Anti‑pattern detection  
+- Dynamic profiling  
+- Empirical scaling  
+- Metadata‑driven remediation  
+- Decision Engine behavior  
+- DSA showcase components  
 
-## 🚀 Overview
-
-These examples are decoupled from the core library to ensure that the production package remains zero-dependency and lightweight. To run these demonstrations, you will need to install the optional scientific visualization stack.
-
-
-
----
-
-## 🛠️ Installation
-
-Before running the examples, ensure you have the `visuals` extras installed in your environment:
+Run any demo directly:
 
 ```bash
-pip install "arprax-algorithms[visuals]"
+python <demo_file>.py
 ```
 ---
+## 📁 Directory Structure
 
-> [!IMPORTANT]
-> This will install **Matplotlib** and **NetworkX**, which are required for the real-time animations.
+```Code
+examples/
+└── alnoms/
+    ├── 1_cubic_matrix.py
+    ├── 2_quadratic_duplicates.py
+    ├── 3_nested_membership.py
+    ├── 4_concat_in_loop.py
+    ├── 5_list_extend_vs_append.py
+    ├── 6_redundant_sort.py
+    ├── 7_manual_bubble_sort.py
+    ├── 8_linear_search_in_loop.py
+    ├── 9_naive_find.py
+    ├── 10_dfs_like_loop.py
+    ├── 11_cycle_detection_manual.py
+    ├── 12_execution_entrypoint.py
+    ├── 13_decision_engine.py
+    ├── 14_profiler.py
+    ├── 15_data_generators.py
+    ├── 16_data_reader.py
+    ├── 17_dsa_showcase.py
+    ├── 18_end_to_end_governance.py
+    ├── DEMONSTRATIONS.md
+    └── run_demos_1_to_12.py
+```
+---
+## 🧩 Part 1 — Algorithmic Anti-Patterns (Demos 1–12)
 
-## 📚 Available Demonstrations
+These scripts generate **deliberately inefficient programs** used to test the governance engine. They are the canonical examples for static analysis and pattern detection.
 
-### 1. Algorithm Visualizer (`visualizer.py`)
-This script provides real-time, frame-by-frame animations of sorting and search logic. It is the primary tool for the **Arprax Academy** curriculum to demonstrate algorithmic complexity visually.
+| Demo | File | Focus |
+| :--- | :--- | :--- |
+| **1** | `1_cubic_matrix.py` | Triple-nested loops, cubic complexity detection. |
+| **2** | `2_quadratic_duplicates.py` | Duplicate detection via nested loops. |
+| **3** | `3_nested_membership.py` | Membership test inside loop → set conversion fix. |
+| **4** | `4_concat_in_loop.py` | Inefficient string/list concatenation inside loops. |
+| **5** | `5_list_extend_vs_append.py` | Extend vs append performance patterns. |
+| **6** | `6_redundant_sort.py` | Sorting inside loops → hoisting recommendation. |
+| **7** | `7_manual_bubble_sort.py` | Manual bubble sort detection. |
+| **8** | `8_linear_search_in_loop.py` | Repeated linear search anti-pattern. |
+| **9** | `9_naive_find.py` | Naive scanning patterns. |
+| **10** | `10_dfs_like_loop.py` | DFS-like nested iteration. |
+| **11** | `11_cycle_detection_manual.py` | Manual cycle detection logic. |
+| **12** | `12_execution_entrypoint.py` | Example of a script with a `__main__` entrypoint. |
 
-**How to run:**
-```bash
-python examples/visualizer.py
+### Run all 1–12 demos:
+
+```code
+python run_demos_1_to_12.py
 ```
 
 ---
+## 🧠 Part 2 — Core Engine Components (Demos 13–16)
 
-> [!IMPORTANT]
-> To run these demonstrations, you must have the `visuals` extras installed. This includes **Matplotlib** and **NetworkX**, which are required for real-time animations and graph rendering.
+These demos isolate the internal modules that power the governance engine.
 
-```bash
-pip install "arprax-algorithms[visuals]"
-```
+### 13 — Decision Engine
+File: `13_decision_engine.py`
+Demonstrates how Alnoms maps:
+* **detected patterns** → **cures**
+* **cures** → **metadata registry entries**
+* **metadata** → **implementation modules**
 
-- Key Features: Real-time bar-chart animations for sorting and dynamic graph traversal for linked lists.
+Useful for understanding the OSS governance mapping layer.
 
-### 2. Performance Profiler (`profiler_demo.py`)
-A demonstration of the `ArpraxProfiler`, showing how to measure execution time, memory usage, and operation counts across different input sizes ($N$). This tool is essential for verifying theoretical Big O complexity with empirical data.
+### 14 — Profiler
+File: `14_profiler.py`
+Demonstrates:
+* **benchmarking**
+* **doubling tests**
+* **decorator profiling**
+* **stress suite comparisons**
 
+*This is the canonical example of the Alnoms Profiler.*
 
+### 15 — Data Generators
+File: `15_data_generators.py`
+Shows how synthetic arrays and structured inputs are produced for:
+* **profiling**
+* **empirical scaling**
+* **governance audits**
 
-**How to run:**
-```bash
-python examples/profiler_demo.py
-```
-Key Features:
-- Automatic Table Generation: Outputs clean Markdown or ASCII tables for easy documentation.
-- Time-Complexity Reporting: Compares $O(1)$, $O(N)$, $O(\log N)$, and $O(N^2)$ behaviors.
-- Resource Tracking: High-precision memory and CPU delta measurement.
+### 16 — Data Reader
+File: `16_data_reader.py`
+Demonstrates simple ingestion utilities for reading structured data.
 ---
-## 🧪 Running Manual Tests
-If you are contributing to the visualization logic, you can run the manual test suite located in the tests/manual/ directory. Note that these tests are excluded from the standard CI/CD pipeline because they require a GUI environment.
-```Bash
-pytest tests/manual/test_visuals.py
-```
+## 🏗️ Part 3 — Integration & Governance (Demos 17–18)
+
+### 17 — DSA Showcase
+File: `17_dsa_showcase.py`
+A lightweight demonstration of the DSA facade:
+* **sorting**
+* **searching**
+* **pointer algorithms**
+* **graph algorithms**
+
+*This is not a teaching module — it is a capability sampler.*
+
+### ⭐ 18 — End-to-End Governance (Flagship Demo)
+File: `18_end_to_end_governance.py`
+This is the primary demonstration of the Alnoms Governance Engine.
+It performs a full audit:
+* **Static AST analysis**
+* **Pattern detection**
+* **Dynamic profiling**
+* **Empirical scaling**
+* **Complexity estimation**
+* **Governance verdict**
+* **Narrative report**
+* **Recommended cure**
+
+**This is the demo you show to:**
+* **reviewers**
+* **collaborators**
+* **customers**
+* **academic readers**
 ---
+## 📝 Notes
 
-## ⚖️ Architecture Note
-
-> "In **Arprax Lab**, we prioritize **Modular Decoupling**. By keeping our visualization logic in the `examples/` layer, we maintain a 100% verified core library while providing a rich, interactive educational experience."
-
-
-
----
-*Developed by **Arprax Lab** for **Arprax Academy**.*
+* **These demos are not part of the test suite.**
+* **They do not affect coverage.**
+* **They are not executed in CI.**
+* **They are user-facing examples for learning and exploration.**
