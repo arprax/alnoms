@@ -39,14 +39,15 @@ examples/
     ├── 15_data_generators.py
     ├── 16_data_reader.py
     ├── 17_dsa_showcase.py
-    ├── 18_end_to_end_governance.py
+    ├── 18_end_to_end_performance.py
+    ├── 19_empirical_demo.py
     ├── DEMONSTRATIONS.md
     └── run_demos_1_to_12.py
 ```
 ---
 ## 🧩 Part 1 — Algorithmic Anti-Patterns (Demos 1–12)
 
-These scripts generate **deliberately inefficient programs** used to test the governance engine. They are the canonical examples for static analysis and pattern detection.
+These scripts generate **deliberately inefficient programs** used to test the performance engine. They are the canonical examples for static analysis and pattern detection.
 
 | Demo | File | Focus |
 | :--- | :--- | :--- |
@@ -72,7 +73,7 @@ python run_demos_1_to_12.py
 ---
 ## 🧠 Part 2 — Core Engine Components (Demos 13–16)
 
-These demos isolate the internal modules that power the governance engine.
+These demos isolate the internal modules that power the performance engine.
 
 ### 13 — Decision Engine
 File: `13_decision_engine.py`
@@ -81,7 +82,7 @@ Demonstrates how Alnoms maps:
 * **cures** → **metadata registry entries**
 * **metadata** → **implementation modules**
 
-Useful for understanding the OSS governance mapping layer.
+Useful for understanding the OSS performance mapping layer.
 
 ### 14 — Profiler
 File: `14_profiler.py`
@@ -98,13 +99,13 @@ File: `15_data_generators.py`
 Shows how synthetic arrays and structured inputs are produced for:
 * **profiling**
 * **empirical scaling**
-* **governance audits**
+* **performance audits**
 
 ### 16 — Data Reader
 File: `16_data_reader.py`
 Demonstrates simple ingestion utilities for reading structured data.
 ---
-## 🏗️ Part 3 — Integration & Governance (Demos 17–18)
+## 🏗️ Part 3 — Integration & Performance (Demos 17–18)
 
 ### 17 — DSA Showcase
 File: `17_dsa_showcase.py`
@@ -116,16 +117,16 @@ A lightweight demonstration of the DSA facade:
 
 *This is not a teaching module — it is a capability sampler.*
 
-### ⭐ 18 — End-to-End Governance (Flagship Demo)
-File: `18_end_to_end_governance.py`
-This is the primary demonstration of the Alnoms Governance Engine.
+### ⭐ 18 — End-to-End Performance (Flagship Demo)
+File: `18_end_to_end_performance.py`
+This is the primary demonstration of the Alnoms Performance Engine.
 It performs a full audit:
 * **Static AST analysis**
 * **Pattern detection**
 * **Dynamic profiling**
 * **Empirical scaling**
 * **Complexity estimation**
-* **Governance verdict**
+* **Performance verdict**
 * **Narrative report**
 * **Recommended cure**
 
@@ -134,6 +135,14 @@ It performs a full audit:
 * **collaborators**
 * **customers**
 * **academic readers**
+
+### 📈 19 — Empirical Scaling Contract
+File: `19_empirical_demo.py`  
+A focused demonstration of how Alnoms proves Big-O complexity dynamically via the `data_gen(n)` hook. Highlights:
+* The `data_gen(n)` contract for automated input scaling.
+* Detection and verification of a hidden $O(N^3)$ matrix multiplication trap.
+* Generating empirical evidence to validate static heuristics.
+
 ---
 ## 📝 Notes
 

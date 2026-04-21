@@ -129,3 +129,7 @@ class DataGenerator:
         matrix_a = [[1 for _ in range(n)] for _ in range(n)]
         matrix_b = [[2 for _ in range(n)] for _ in range(n)]
         return (matrix_a, matrix_b)
+
+    @staticmethod
+    def random_string(n: int, alphabet="abcdefghijklmnopqrstuvwxyz") -> str:
+        return "".join(random.choice(alphabet) for _ in range(n))

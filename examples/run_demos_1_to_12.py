@@ -28,6 +28,7 @@ def run_demo(file):
     print("=" * 80)
 
     cmd = [sys.executable, "-m", "alnoms", "analyze", path, "--deep"]
+    # cmd = [sys.executable, "-m", "alnoms", "analyze", path]
 
     # Run the command and stream output
     subprocess.run(cmd)

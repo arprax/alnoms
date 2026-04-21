@@ -318,7 +318,7 @@ class ScriptAnalyzer:
 
         # 2. Static Analysis
         raw_patterns = analyze_code(path)
-        with open(path, "r") as f:
+        with open(path, "r", encoding="utf-8") as f:
             full_tree = ast.parse(f.read())
 
         empirical_results = None

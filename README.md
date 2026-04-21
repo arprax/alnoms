@@ -1,6 +1,7 @@
 <p align="center">
   <img src="https://raw.githubusercontent.com/arprax/alnoms/main/assets/logo.png" alt="Alnoms Logo" width="450"/>
 </p>
+
 # Alnoms — The Performance Intelligence Engine.
 
 **Alnoms is the Performance Intelligence Engine for the Applied Data Intelligence era.  
@@ -56,42 +57,52 @@ This is algorithmic intelligence — not just profiling.
 Let's look at a real-life example. You have a script (`slow_script.py`) that cross-references data:
 
 ```python
+"""Inefficient script used for the Alnoms demonstration."""
+
 def slow_membership_sum(arr):
     total = 0
     for x in arr:
-        # 🚨 SILENT TRAP: Membership check inside a loop.
-        # This creates a hidden O(N^2) time complexity.
+        # Intentional O(N^2) membership trap
         if x in arr:
             total += x
     return total
+
+# Required for empirical scaling
+def data_gen(n):
+    return (list(range(n)),)
+
+if __name__ == "__main__":
+    data = list(range(200))
+    print(slow_membership_sum(data))
+
 ```
 Run an automated algorithmic audit on your script:
 ```bash
-alnoms analyze slow_script.py --deep --start-n 50 --rounds 4
+alnoms analyze slow_script.py --deep --start-n 10 --rounds 2
 ```
 
 **Example Output:**
 ```text
 ==================================================
- 🔬 ALNOMS PERFORMANCE REPORT 
+⚖️ PERFORMANCE REPORT
 ==================================================
-File: slow_script.py
-Timestamp (UTC): 2026-04-16T06:02:38.742138Z
-Total Execution Time: 0.0086s
+File: examples/alnoms/scripts/slow_script.py
+Timestamp (UTC): 2026-04-20T19:05:04.103523Z
+Total Execution Time: 0.0143s
 
 🧠 DETECTED INTENT:
    Membership test ('in arr') inside loop
 
-🚨 STATIC ANALYSIS (Diagnostics & Remediation)
+🚨 STATIC ANALYSIS (Diagnostics & Suggestions)
 --------------------------------------------------
 1. ⚠️ ISSUE: Membership test ('in arr') inside loop (Function: slow_membership_sum | Line: 7)
    📖 Explanation: Membership checks on lists inside loops are O(N). Convert to a set for O(1) lookups.
-   💊 RECOMMENDED CURE: O(N) Optimization
-   🏗️ IMPLEMENTATION: builtin.set
+   💊 RECOMMENDED OPTIMIZATION: O(N)
+   🏗️ IMPLEMENTATION: alnoms.dsa.structures.separate_chaining_hash_st
    🔐 ACCESS TIER: OSS
    ⏱️ Complexity Shift: O(N*M) → O(N + M)
 
-   💡 HOW TO FIX:
+   💡 SUGGESTED FIX:
    --- BEFORE ---
    |  for k in keys:
    |      if k in items:
@@ -104,41 +115,38 @@ Total Execution Time: 0.0086s
 
 ⏱️ DYNAMIC PROFILING (Top Execution Bottlenecks)
 --------------------------------------------------
-   1. slow_membership_sum() -> 7e-05s (0.86%)
+   1. slow_membership_sum() -> 8e-05s (0.56%)
 
 📈 EMPIRICAL SCALING ANALYSIS: slow_membership_sum()
 --------------------------------------------------
 N          | Time (s)     | Ratio    | Est. Complexity
 --------------------------------------------------
-50         | 0.00001      | -        | Initial Round  
-100        | 0.00002      | 3.42     | O(N^2)         
-200        | 0.00008      | 3.65     | O(N^2)         
-400        | 0.00030      | 3.91     | O(N^2)         
+10         | 0.00000      | -        | Initial Round  
+20         | 0.00000      | 2.33     | O(N)           
 
 ⚖️ VERDICT:
-⚠️ WARNING: Function operates at O(N^2). Unsafe for large-scale workloads.
+✅ PASSED: Function operates at O(N). Safe for scaling.
 
-📌 ADDITIONAL CONTEXT
+📌 CONTEXT
 --------------------------------------------------
-   The function may appear fast at small input sizes,
-   but empirical scaling confirms the true asymptotic behavior.
+   Empirical scaling validates asymptotic behavior under increasing load.
 
 🚀 EXPECTED IMPACT
 --------------------------------------------------
    For N = 10,000:
      • O(N²) → ~100,000,000 operations
      • O(N)  → ~10,000 operations
-   Estimated speedup: ~100× to ~1,000× depending on hardware.
+   Estimated improvement: 100×–1000× depending on workload.
 
 🤖 CONFIDENCE
 --------------------------------------------------
-   High — static analysis and empirical scaling agree.
+   Medium — mixed signals between analysis methods.
 
-🔁 AFTER FIX (SIMULATED)
+🔁 AFTER OPTIMIZATION (SIMULATED)
 --------------------------------------------------
-   Est. Complexity: O(N)
-   Expected Behavior: Linear scaling with stable performance.
-   Recommended Implementation:
+   Expected Complexity: O(N)
+   Behavior: Linear scaling with stable performance.
+   Suggested Implementation:
        s = set(arr)
        for x in arr:
            if x in s:
