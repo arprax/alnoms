@@ -324,9 +324,14 @@ class ScriptAnalyzer:
             return None
 
         prof = Profiler(repeats=3, warmup=1, mode="min")
-        return prof.run_doubling_test(
-            target_func, effective_gen, start_n=final_start_n, rounds=final_rounds
-        )
+        try:
+            return prof.run_doubling_test(
+                target_func, effective_gen, start_n=final_start_n, rounds=final_rounds
+            )
+        except Exception:
+            # If empirical scaling fails (signature mismatch, bad generator, etc.),
+            # degrade gracefully and skip empirical results.
+            return None
 
     # ----------------------------------------------------------------------
     # FULL PIPELINE ORCHESTRATION
@@ -371,6 +376,10 @@ class ScriptAnalyzer:
         raw_patterns = analyze_code(path)
         with open(path, "r", encoding="utf-8") as f:
             full_tree = ast.parse(f.read())
+            # Attach parent pointers for AST classification
+            for node in ast.walk(full_tree):
+                for child in ast.iter_child_nodes(node):
+                    child.parent = node
 
         empirical_results = None
         slowest_func_name = None

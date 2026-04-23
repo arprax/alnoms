@@ -87,6 +87,31 @@ class AutoGen:
                 • "sequential"
                 • "generic"
         """
+        # --- Detect scalar-only nested-loop functions ---
+        # If the function has exactly one parameter and that parameter is used
+        # only inside range(param), treat it as a scalar function.
+        params = func_ast.args.args
+        if len(params) == 1:
+            pname = params[0].arg
+            scalar_only = True
+
+            for node in ast.walk(func_ast):
+                if isinstance(node, ast.Name) and node.id == pname:
+                    parent = getattr(node, "parent", None)
+
+                    # Allowed: range(n)
+                    if (
+                        isinstance(parent, ast.Call)
+                        and getattr(parent.func, "id", None) == "range"
+                    ):
+                        continue
+
+                    # Anything else means it's not scalar-only
+                    scalar_only = False
+                    break
+
+            if scalar_only:
+                return "scalar"
         loop_count = 0
         has_dict = False
         has_set = False
@@ -136,6 +161,9 @@ class AutoGen:
         Returns:
             Tuple[Any, ...]: Execution‑ready tuple of arguments.
         """
+        if pattern == "scalar":
+            return (n,)
+
         if pattern == "nested_loops":
             return (list(range(n)),)
 
