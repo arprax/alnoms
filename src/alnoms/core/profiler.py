@@ -146,10 +146,10 @@ class Profiler:
         results = []
         prev_time = 0.0
         n = start_n
-        start_clock = time.time()
+        start_clock = time.perf_counter()
 
         for _ in range(rounds):
-            if time.time() - start_clock > timeout:
+            if time.perf_counter() - start_clock > timeout:
                 break
 
             data = input_gen(n)

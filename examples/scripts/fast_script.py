@@ -15,9 +15,9 @@ def fast_membership_sum(arr):
     return total
 
 
-# Required for empirical scaling
-def data_gen(n):
-    return (list(range(n)),)
+# # Required for empirical scaling
+# def data_gen(n):
+#     return (list(range(n)),)
 
 
 if __name__ == "__main__":

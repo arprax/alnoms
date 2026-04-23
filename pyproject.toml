@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "alnoms"
-version = "1.0.1"  # 0.5.1 Managed by promote_oss.py - Do not edit manually. If you do, always match it with the current github release
+version = "1.0.2"  # 0.5.1 Managed by promote_oss.py - Do not edit manually. If you do, always match it with the current github release
 description = "Alnoms: Sovereign Algorithm Standard and Performance Governance Engine"
 dependencies = []
 readme = "README.md"
