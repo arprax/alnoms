@@ -17,6 +17,8 @@ import argparse
 import sys
 import json
 from alnoms.core.analyzer import ScriptAnalyzer
+import io
+import contextlib
 
 
 class PerformanceCLI:
@@ -227,23 +229,47 @@ class PerformanceCLI:
 
     @staticmethod
     def main():
+        """Primary entry point for the Alnoms Command-Line Interface.
+
+        Configures the argument parser and routes execution based on the selected
+        subcommand. Supports two primary modes:
+        1. `analyze`: Human-readable performance reporting with deep profiling options.
+        2. `ci`: Headless execution mode that accepts multiple files, outputs strict
+           JSON, and enforces Big-O complexity guardrails via system exit codes.
+
+        Args:
+            None (Parses arguments directly from sys.argv).
+
+        Raises:
+            SystemExit:
+                - Exits 0 on successful execution and clean compliance.
+                - Exits 1 if an internal error occurs or if the `ci` mode detects
+                  a performance bottleneck that breaches the `--fail-on` threshold.
+        """
         parser = argparse.ArgumentParser(
             prog="alnoms",
             description="🔬 Alnoms: Performance Intelligence System",
             formatter_class=argparse.RawDescriptionHelpFormatter,
             epilog="""
-Example Usage:
-  alnoms analyze script.py
-  alnoms analyze script.py --deep
-  alnoms analyze script.py --deep --start-n 50 --rounds 3
-  alnoms analyze script.py --json
-            """,
+    Example Usage:
+      alnoms analyze script.py
+      alnoms analyze script.py --deep
+      alnoms analyze script.py --deep --start-n 50 --rounds 3
+      alnoms analyze script.py --json
+
+      # CI/CD Execution
+      alnoms ci file1.py file2.py --fail-on "O(N^3)"
+                """,
         )
+
+        # Global version flag
+        parser.add_argument("-v", "--version", action="version", version="Alnoms 1.0.2")
 
         subparsers = parser.add_subparsers(dest="command", help="Commands")
 
+        # --- 1. THE HUMAN COMMAND (analyze) ---
         analyze_parser = subparsers.add_parser(
-            "analyze", help="Analyze Python file performance"
+            "analyze", help="Analyze a single Python file"
         )
         analyze_parser.add_argument("file", help="Python file path")
 
@@ -258,6 +284,17 @@ Example Usage:
         output_group = analyze_parser.add_argument_group("Output Options")
         output_group.add_argument("--json", action="store_true")
         output_group.add_argument("--pretty", action="store_true")
+
+        # --- 2. THE ROBOT COMMAND (ci) ---
+        ci_parser = subparsers.add_parser(
+            "ci", help="Headless execution for CI/CD pipelines"
+        )
+        ci_parser.add_argument("files", nargs="+", help="List of Python files to scan")
+        ci_parser.add_argument(
+            "--fail-on",
+            default="",
+            help="Complexity threshold to fail the build (e.g., O(N^3))",
+        )
 
         args = parser.parse_args()
 
@@ -282,6 +319,61 @@ Example Usage:
             except Exception as e:
                 print(f"❌ Error analyzing {args.file}: {str(e)}")
                 sys.exit(1)
+
+        elif args.command == "ci":
+            # --- THE CI ENFORCEMENT LOGIC ---
+            ci_report = {"scanned_files": len(args.files), "issues": []}
+            should_fail = False
+
+            # Complexity ranking to easily evaluate thresholds
+            severity = {
+                "O(1)": 1,
+                "O(log N)": 2,
+                "O(N)": 3,
+                "O(N log N)": 4,
+                "O(N^2)": 5,
+                "O(N^3)": 6,
+                "O(2^N)": 7,
+            }
+            fail_level = severity.get(args.fail_on, 99)  # 99 means don't fail
+
+            for file_path in args.files:
+                try:
+                    # 🛑 THE FIX: Swallow rogue print() and DEBUG statements
+                    with contextlib.redirect_stdout(io.StringIO()):
+                        result = ScriptAnalyzer.analyze_file(path=file_path, deep=False)
+
+                    patterns = result.get("patterns", [])
+
+                    for p in patterns:
+                        detected_complexity = p.get("dsa_meta", {}).get(
+                            "complexity", "O(N)"
+                        )
+                        issue_payload = {
+                            "file": file_path,
+                            "function": p.get("function", "global"),
+                            "issue": p.get("issue", "Unknown Bottleneck"),
+                            "complexity": detected_complexity,
+                            "suggestion": p.get("explanation", ""),
+                        }
+                        ci_report["issues"].append(issue_payload)
+
+                        # Check if this specific issue breaches the guardrail
+                        if severity.get(detected_complexity, 0) >= fail_level:
+                            should_fail = True
+
+                except Exception as e:
+                    ci_report["issues"].append({"file": file_path, "error": str(e)})
+                    should_fail = True
+
+            # Print ONLY strict JSON so the GitHub Action can parse it
+            print(json.dumps(ci_report, indent=2))
+
+            # Trigger the Action Failure if the threshold was crossed
+            if should_fail:
+                sys.exit(1)
+            sys.exit(0)
+
         else:
             parser.print_help()
 

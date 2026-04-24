@@ -181,6 +181,7 @@ alnoms/
 ### 🛡️ 1. Pre-Deployment Performance CLI
 Alnoms acts as an automated "Algorithmic Pharmacy," detecting O(N²) traps and mapping them directly to optimized DSA solutions before they merge to production.
 
+**1. The Local Surgical Tool (`analyze`)** Designed for human eyes. Provides rich terminal tables, dynamic profiling, and deep empirical proofs for surgical investigation of a single file.
 ```bash
 # Run a static + dynamic profile on any script
 alnoms analyze my_script.py
@@ -188,6 +189,16 @@ alnoms analyze my_script.py
 # Run a deep empirical scaling (Doubling Test)
 alnoms analyze my_script.py --deep --start-n 50 --rounds 5
 ```
+
+**2. The CI/CD Robot (`ci`)** Designed for automated pipelines (like GitHub Actions). A headless, ultra-fast static analysis mode that scans multiple files instantly and outputs strict JSON. It enforces FinOps guardrails by intentionally failing builds that breach your Big-O thresholds.
+```bash
+# Scan multiple files and output pure JSON
+alnoms ci auth.py database.py routes.py
+
+# Block the PR/Build if quadratic complexity or worse is detected
+alnoms ci src/*.py --fail-on "O(N^2)"
+```
+
 ### 🧪 2. Empirical Profiling API
 High-precision performance analysis with:
 
