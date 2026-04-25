@@ -1,5 +1,4 @@
-"""
-Alnoms: Performance Intelligence CLI.
+"""Alnoms: Performance Intelligence CLI.
 
 Provides the command-line interface for the Alnoms performance intelligence system.
 The CLI orchestrates static AST analysis, prescriptive remediation suggestions,
@@ -7,18 +6,20 @@ dynamic profiling, and empirical doubling tests to detect performance bottleneck
 before production.
 
 Features:
-    • CI/CD Ready: Supports raw and pretty JSON outputs for automation pipelines.
-    • Static Analysis: Detects inefficient loops, API calls, and performance traps.
-    • Prescriptive Suggestions: Recommends O(1) fixes and optimized patterns.
-    • Empirical Analysis: Integrates with Arprax Profiler for Big-O scaling analysis.
+    - CI/CD Ready: Supports raw and pretty JSON outputs for automation pipelines.
+    - Static Analysis: Detects inefficient loops, API calls, and performance traps.
+    - Prescriptive Suggestions: Recommends O(1) fixes and optimized patterns.
+    - Empirical Analysis: Integrates with Arprax Profiler for Big-O scaling analysis.
 """
 
 import argparse
 import sys
 import json
-from alnoms.core.analyzer import ScriptAnalyzer
 import io
 import contextlib
+from datetime import datetime, timezone
+
+from alnoms.core.analyzer import ScriptAnalyzer
 
 
 class PerformanceCLI:
@@ -31,24 +32,22 @@ class PerformanceCLI:
     """
 
     @staticmethod
-    def print_report(result: dict):
+    def print_report(result: dict) -> None:
         """Renders a full performance intelligence report in human-readable format.
 
-        This method produces a structured analysis report that includes:
-
-        • Detected performance patterns
-        • Static diagnostics and optimization suggestions
-        • Dynamic profiling bottlenecks
-        • Empirical scaling analysis (doubling test)
-        • Performance verdict and impact estimation
-        • Confidence scoring and post-fix simulation
+        This method produces a structured analysis report that includes detected
+        performance patterns, static diagnostics, dynamic profiling bottlenecks,
+        empirical scaling analysis, performance verdict, and simulated fixes.
 
         Args:
             result (dict): Output from `ScriptAnalyzer.analyze_file()` containing:
-                patterns, profile, empirical, meta, empirical_target, total_time.
-
-        Returns:
-            None: Prints directly to stdout.
+                - 'patterns' (list): Detected performance patterns.
+                - 'profile' (list): Dynamic profiling data.
+                - 'empirical' (list): Empirical scaling analysis data.
+                - 'meta' (dict): Metadata including timestamp and version.
+                - 'empirical_target' (str): The target function for scaling tests.
+                - 'total_time' (float): Total execution time.
+                - 'file' (str): The analyzed file path.
         """
         meta = result.get("meta", {})
         patterns = result.get("patterns", [])
@@ -228,7 +227,7 @@ class PerformanceCLI:
         print("==================================================\n")
 
     @staticmethod
-    def main():
+    def main() -> None:
         """Primary entry point for the Alnoms Command-Line Interface.
 
         Configures the argument parser and routes execution based on the selected
@@ -237,13 +236,10 @@ class PerformanceCLI:
         2. `ci`: Headless execution mode that accepts multiple files, outputs strict
            JSON, and enforces Big-O complexity guardrails via system exit codes.
 
-        Args:
-            None (Parses arguments directly from sys.argv).
-
         Raises:
             SystemExit:
-                - Exits 0 on successful execution and clean compliance.
-                - Exits 1 if an internal error occurs or if the `ci` mode detects
+                - Exits with 0 on successful execution and clean compliance.
+                - Exits with 1 if an internal error occurs or if the `ci` mode detects
                   a performance bottleneck that breaches the `--fail-on` threshold.
         """
         parser = argparse.ArgumentParser(
@@ -263,7 +259,7 @@ class PerformanceCLI:
         )
 
         # Global version flag
-        parser.add_argument("-v", "--version", action="version", version="Alnoms 1.0.2")
+        parser.add_argument("-v", "--version", action="version", version="Alnoms 1.1.2")
 
         subparsers = parser.add_subparsers(dest="command", help="Commands")
 
@@ -321,59 +317,171 @@ class PerformanceCLI:
                 sys.exit(1)
 
         elif args.command == "ci":
-            # --- THE CI ENFORCEMENT LOGIC ---
-            ci_report = {"scanned_files": len(args.files), "issues": []}
-            should_fail = False
+            # --- SEVERITY & SCORING MODEL ---
 
-            # Complexity ranking to easily evaluate thresholds
-            severity = {
-                "O(1)": 1,
-                "O(log N)": 2,
-                "O(N)": 3,
-                "O(N log N)": 4,
-                "O(N^2)": 5,
-                "O(N^3)": 6,
-                "O(2^N)": 7,
+            severity_scoring = {
+                "O(2^N)": {"level": "CRITICAL", "score": 7},
+                "O(N^3)": {"level": "CRITICAL", "score": 6},
+                "O(N^2)": {"level": "HIGH", "score": 5},
+                "O(N log N)": {"level": "MEDIUM", "score": 4},
+                "O(N)": {"level": "LOW", "score": 3},
+                "O(log N)": {"level": "LOW", "score": 2},
+                "O(1)": {"level": "LOW", "score": 1},
             }
-            fail_level = severity.get(args.fail_on, 99)  # 99 means don't fail
+
+            fail_score = severity_scoring.get(args.fail_on, {}).get("score", 99)
+
+            raw_issues = []
+
+            # --- 1. GATHER EVIDENCE ---
 
             for file_path in args.files:
                 try:
-                    # 🛑 THE FIX: Swallow rogue print() and DEBUG statements
                     with contextlib.redirect_stdout(io.StringIO()):
                         result = ScriptAnalyzer.analyze_file(path=file_path, deep=False)
 
                     patterns = result.get("patterns", [])
 
                     for p in patterns:
-                        detected_complexity = p.get("dsa_meta", {}).get(
-                            "complexity", "O(N)"
-                        )
-                        issue_payload = {
-                            "file": file_path,
-                            "function": p.get("function", "global"),
-                            "issue": p.get("issue", "Unknown Bottleneck"),
-                            "complexity": detected_complexity,
-                            "suggestion": p.get("explanation", ""),
-                        }
-                        ci_report["issues"].append(issue_payload)
+                        comp = p.get("static_complexity") or "O(N^2)"
 
-                        # Check if this specific issue breaches the guardrail
-                        if severity.get(detected_complexity, 0) >= fail_level:
-                            should_fail = True
+                        meta = severity_scoring.get(comp, {"level": "HIGH", "score": 5})
+
+                        raw_issues.append(
+                            {
+                                "file": file_path,
+                                "function": p.get("function", "global"),
+                                "complexity": comp,
+                                "severity": meta["level"],
+                                "_score": meta["score"],  # Internal sorting key
+                                "issue": p.get("issue", "Unknown Bottleneck"),
+                                "suggestion": p.get("explanation", ""),
+                            }
+                        )
 
                 except Exception as e:
-                    ci_report["issues"].append({"file": file_path, "error": str(e)})
-                    should_fail = True
+                    # Handle internal engine crashes gracefully in the new schema
 
-            # Print ONLY strict JSON so the GitHub Action can parse it
-            print(json.dumps(ci_report, indent=2))
+                    raw_issues.append(
+                        {
+                            "file": file_path,
+                            "function": "unknown",
+                            "complexity": "Unknown",
+                            "severity": "CRITICAL",
+                            "_score": 99,
+                            "issue": "Engine Crash",
+                            "suggestion": str(e),
+                        }
+                    )
 
-            # Trigger the Action Failure if the threshold was crossed
-            if should_fail:
+            # --- 2. SORT & PRIORITIZE ---
+
+            # Sort by highest severity score first. If tied, sort alphabetically by file to ensure determinism.
+
+            raw_issues.sort(key=lambda x: (x["_score"], x["file"]), reverse=True)
+
+            # Strip the internal sorting key for clean JSON
+
+            for issue in raw_issues:
+                del issue["_score"]
+
+            # --- 3. BUILD THE PAYLOAD ---
+
+            payload = {}
+
+            if not raw_issues:
+                # Clean Pass
+
+                payload = {
+                    "decision": {
+                        "status": "PASS",
+                        "reason": "No performance regressions detected",
+                        "confidence": "HIGH",
+                    },
+                    "primary_trigger": None,
+                    "summary": {
+                        "total_issues": 0,
+                        "by_severity": {
+                            "CRITICAL": 0,
+                            "HIGH": 0,
+                            "MEDIUM": 0,
+                            "LOW": 0,
+                        },
+                        "worst_complexity": "O(1)",
+                        "risk_level": "LOW",
+                    },
+                    "issues": [],
+                    "metadata": {
+                        "scanned_files": len(args.files),
+                        "analysis_mode": "fast",
+                        "timestamp": datetime.now(timezone.utc)
+                        .isoformat()
+                        .replace("+00:00", "Z"),
+                    },
+                }
+
+            else:
+                # Issues Found
+
+                primary = raw_issues[0]
+
+                # --- 3. BUILD THE PAYLOAD ---
+
+                # Aggregate Summary
+                summary = {
+                    "total_issues": len(raw_issues),
+                    "by_severity": {"CRITICAL": 0, "HIGH": 0, "MEDIUM": 0, "LOW": 0},
+                    "worst_complexity": primary["complexity"],
+                    "risk_level": primary["severity"],
+                }
+                for issue in raw_issues:
+                    if issue["severity"] in summary["by_severity"]:
+                        summary["by_severity"][issue["severity"]] += 1
+
+                # --- THE STRICT GATE DECISION MODEL ---
+                primary_score = severity_scoring.get(primary["complexity"], {}).get(
+                    "score", 99
+                )
+
+                if primary["severity"] == "CRITICAL":
+                    # Hard Rule: CRITICAL issues ALWAYS block. They cannot be bypassed.
+                    is_blocked = True
+                    reason = f"CRITICAL performance risk detected ({primary['complexity']} scaling)"
+                elif primary_score >= fail_score:
+                    # Threshold Rule: HIGH/MEDIUM issues block if they cross the user's defined limit.
+                    is_blocked = True
+                    reason = f"Performance regression threshold exceeded ({primary['complexity']} scaling)"
+                else:
+                    # Clean Pass
+                    is_blocked = False
+                    reason = "Code scales efficiently within acceptable limits."
+
+                payload = {
+                    "decision": {
+                        "status": "BLOCK" if is_blocked else "PASS",
+                        "reason": reason,
+                        "confidence": "HIGH",
+                    },
+                    "primary_trigger": primary,
+                    "summary": summary,
+                    "issues": raw_issues,
+                    "metadata": {
+                        "scanned_files": len(args.files),
+                        "analysis_mode": "fast",
+                        "timestamp": datetime.now(timezone.utc)
+                        .isoformat()
+                        .replace("+00:00", "Z"),
+                    },
+                }
+
+            # --- 4. OUTPUT ---
+
+            print(json.dumps(payload, indent=2))
+
+            if payload.get("decision", {}).get("status") == "BLOCK":
                 sys.exit(1)
-            sys.exit(0)
 
+            sys.exit(0)
         else:
             parser.print_help()
 
