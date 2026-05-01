@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://raw.githubusercontent.com/arprax/alnoms/main/assets/logo.svg" alt="Alnoms Logo" width="450"/>
+  <img src="https://raw.githubusercontent.com/arprax/alnoms/main/assets/logo.png" alt="Alnoms Logo" width="450"/>
 </p>
 
 # Alnoms — The Performance Intelligence Engine.
