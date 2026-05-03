@@ -3,9 +3,8 @@ message: "If you use this software, please cite it as below."
 authors:
   - family-names: "Chowdhury"
     given-names: "Tanmoy"
-    affiliation: "Arprax LLC"
-title: "Alnoms: A Deterministic, Governance‑Ready Python Library for Algorithmic Complexity Analysis and Data Structure Instrumentation"
-version: 0.1.0
+    affiliation: "Arprax"
+title: "Alnoms: A Performance Intelligence Engine for Computational Analysis"
 date-released: 2026-02-01
 url: "https://alnoms.com"
 repository-code: "https://github.com/arprax/alnoms"

@@ -7,7 +7,7 @@
 **Alnoms is the Performance Intelligence Engine for the Applied Data Intelligence era.  
 It profiles, analyzes, and proves algorithmic performance before code reaches production.**
 
-Built by **Arprax Lab**, Alnoms brings scientific rigor to modern software engineering by unifying profiling, static analysis, and algorithmic knowledge into a single, developer‑first framework. 
+Built by [**Arprax**](https://arprax.com/), Alnoms brings scientific rigor to modern software engineering by unifying profiling, static analysis, and algorithmic knowledge into a single, developer‑first framework. 
 
 In an era where AI‑generated code, cloud costs, and complexity blowups are accelerating, Alnoms ensures that the code you ship is fast, safe, and mathematically justified. Alnoms goes beyond standard library utilities to provide a complete **Pre-Deployment Performance Intelligence System**—ensuring that the code you ship scales safely in production.
 
@@ -322,21 +322,11 @@ If you use **Alnoms** in your research, please cite (ee the "Cite this repositor
   author       = {Chowdhury, Tanmoy},
   title        = {Alnoms: A Performance Intelligence Engine for Computational Analysis},
   year         = {2026},
-  version      = {0.1.0},
   url          = {https://alnoms.com},
   note         = {Available at https://github.com/arprax/alnoms}
 }
 ```
 ---
-## JOSS Submission Summary
 
-Alnoms is a deterministic Python library for classical algorithms, data structures, and performance analysis.
-
-It provides reproducible implementations with explicit complexity analysis, uniform documentation, and a structured architecture designed for benchmarking, profiling, and algorithmic performance evaluation.
-
-The library is suitable for research, education, and tooling, offering a curated suite of algorithms and data structures with predictable behavior and clear pedagogical and analytical value.
-
----
-
-**👤 Tanmoy Chowdhury** | Founder, Arprax  
+👤 [**Tanmoy Chowdhury**](https://tanmoychowdhury.com/) | Founder, Arprax  
 *© 2026 Arprax Lab — A core division of Arprax dedicated to Applied Data Intelligence.*
